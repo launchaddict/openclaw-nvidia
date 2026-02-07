@@ -17,7 +17,6 @@ RUN npm install -g openclaw@latest && \
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-VOLUME /data
 EXPOSE 18789
 
 CMD ["/entrypoint.sh"]
