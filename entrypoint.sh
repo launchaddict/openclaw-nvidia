@@ -40,10 +40,12 @@ printf '{
     "port": 18789,
     "bind": "0.0.0.0"
   },
-  "agent": {
-    "workspace": "/data/workspace",
-    "model": {
-      "primary": "moonshotai/kimi-k2.5"
+  "agents": {
+    "defaults": {
+      "workspace": "/data/workspace",
+      "model": {
+        "primary": "moonshotai/kimi-k2.5"
+      }
     }
   },
   "channels": {
