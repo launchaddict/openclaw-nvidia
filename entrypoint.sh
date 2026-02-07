@@ -38,7 +38,7 @@ printf '{
   "gateway": {
     "mode": "local",
     "port": 18789,
-    "bind": "0.0.0.0"
+    "bind": "lan"
   },
   "agents": {
     "defaults": {
@@ -59,4 +59,4 @@ printf '{
 echo "Starting OpenClaw gateway..."
 
 # Start OpenClaw gateway
-exec /usr/local/bin/openclaw gateway start --port 18789 --bind 0.0.0.0
+exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan
