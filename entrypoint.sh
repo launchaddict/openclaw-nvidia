@@ -61,5 +61,6 @@ echo "Running OpenClaw doctor to fix config..."
 
 echo "Starting OpenClaw gateway..."
 
-# Start OpenClaw gateway - skip service check since there's no systemd in containers
-exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan --verbose
+# For containers, use 'gateway start' which runs in foreground
+# instead of 'gateway' which tries to use systemd
+exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan
