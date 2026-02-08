@@ -16,19 +16,23 @@ if [ "$TELEGRAM_BOT_TOKEN" = "placeholder_telegram_token" ] || [ -z "$TELEGRAM_B
   echo ""
 fi
 
-# Create auth-profiles.json
+# Remove old auth files to ensure fresh config
+rm -f /data/.openclaw/agents/main/agent/auth-profiles.json
+rm -f /data/.openclaw/agents/main/agent/auth.json
+
+# Create auth-profiles.json for NVIDIA NIM
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 {
   "version": 1,
   "profiles": {
-    "moonshot:default": {
+    "nvidia:default": {
       "type": "api_key",
-      "provider": "moonshot",
+      "provider": "nvidia",
       "key": "${NVIDIA_API_KEY}"
     }
   },
   "lastGood": {
-    "moonshot": "moonshot:default"
+    "nvidia": "nvidia:default"
   }
 }
 EOF
@@ -46,7 +50,7 @@ if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
       "defaults": {
         "workspace": "/data/workspace",
         "model": {
-          "primary": "moonshot/kimi-k2.5"
+          "primary": "nvidia/kimi-k2.5"
         }
       }
     },
@@ -69,7 +73,7 @@ else
       "defaults": {
         "workspace": "/data/workspace",
         "model": {
-          "primary": "moonshot/kimi-k2.5"
+          "primary": "nvidia/kimi-k2.5"
         }
       }
     },
