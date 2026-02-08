@@ -52,7 +52,7 @@ cat > /data/.openclaw/openclaw.json << EOF
       "nvidia": {
         "baseUrl": "https://integrate.api.nvidia.com/v1",
         "apiKey": "${NVIDIA_API_KEY}",
-        "api": "openai-chat",
+        "api": "openai",
         "models": [
           {
             "id": "moonshotai/kimi-k2.5",
@@ -96,7 +96,7 @@ cat > /data/.openclaw/openclaw.json << EOF
       "nvidia": {
         "baseUrl": "https://integrate.api.nvidia.com/v1",
         "apiKey": "${NVIDIA_API_KEY}",
-        "api": "openai-chat",
+        "api": "openai",
         "models": [
           {
             "id": "moonshotai/kimi-k2.5",
