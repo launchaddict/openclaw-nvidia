@@ -16,7 +16,8 @@ if [ "$TELEGRAM_BOT_TOKEN" = "placeholder_telegram_token" ] || [ -z "$TELEGRAM_B
   echo ""
 fi
 
-# Remove old auth files to ensure fresh config
+# Remove old config files to ensure fresh config
+rm -f /data/.openclaw/openclaw.json
 rm -f /data/.openclaw/agents/main/agent/auth-profiles.json
 rm -f /data/.openclaw/agents/main/agent/auth.json
 
