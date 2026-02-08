@@ -2,14 +2,14 @@
 set -e
 
 # Validate environment variables
-if [ "$NVIDIA_API_KEY" = "placeholder_nvidia_key" ] || [ -z "$NVIDIA_API_KEY" ]; then
-  echo "⚠️  WARNING: NVIDIA_API_KEY not set!"
-  echo "   Get your API key from: https://build.nvidia.com/"
+if [ -z "$ZAI_API_KEY" ]; then
+  echo "⚠️  WARNING: ZAI_API_KEY not set!"
+  echo "   Get your API key from: https://z.ai/"
   echo "   Set it in Railway Variables and redeploy."
   echo ""
 fi
 
-if [ "$TELEGRAM_BOT_TOKEN" = "placeholder_telegram_token" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
   echo "⚠️  WARNING: TELEGRAM_BOT_TOKEN not set!"
   echo "   Get your bot token from @BotFather on Telegram"
   echo "   Set it in Railway Variables and redeploy."
@@ -21,24 +21,24 @@ rm -f /data/.openclaw/openclaw.json
 rm -f /data/.openclaw/agents/main/agent/auth-profiles.json
 rm -f /data/.openclaw/agents/main/agent/auth.json
 
-# Create auth-profiles.json for NVIDIA NIM
+# Create auth-profiles.json for Z.ai
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 {
   "version": 1,
   "profiles": {
-    "nvidia:default": {
+    "zai:default": {
       "type": "api_key",
-      "provider": "nvidia",
-      "key": "${NVIDIA_API_KEY}"
+      "provider": "zai",
+      "key": "${ZAI_API_KEY}"
     }
   },
   "lastGood": {
-    "nvidia": "nvidia:default"
+    "zai": "zai:default"
   }
 }
 EOF
 
-# Create openclaw.json with NVIDIA NIM as custom provider
+# Create openclaw.json with Z.ai GLM 4.7 as the provider
 if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
 cat > /data/.openclaw/openclaw.json << EOF
 {
@@ -50,17 +50,17 @@ cat > /data/.openclaw/openclaw.json << EOF
   "models": {
     "mode": "merge",
     "providers": {
-      "nvidia": {
-        "baseUrl": "https://integrate.api.nvidia.com/v1",
-        "apiKey": "${NVIDIA_API_KEY}",
+      "zai": {
+        "baseUrl": "https://api.z.ai/v1",
+        "apiKey": "${ZAI_API_KEY}",
         "api": "openai-completions",
         "models": [
           {
-            "id": "moonshotai/kimi-k2.5",
-            "name": "kimi-k2.5",
+            "id": "glm-4.7",
+            "name": "GLM-4.7",
             "reasoning": true,
             "input": ["text", "image"],
-            "contextWindow": 262144
+            "contextWindow": 128000
           }
         ]
       }
@@ -70,12 +70,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "defaults": {
       "workspace": "/data/workspace",
       "model": {
-        "primary": "nvidia/moonshotai/kimi-k2.5",
-        "fallbacks": [
-          "openrouter/google/gemini-2.0-flash-exp:free",
-          "openrouter/meta-llama/llama-3.2-3b-instruct:free",
-          "openrouter/mistralai/mistral-7b-instruct:free"
-        ]
+        "primary": "zai/glm-4.7"
       }
     }
   },
@@ -99,17 +94,17 @@ cat > /data/.openclaw/openclaw.json << EOF
   "models": {
     "mode": "merge",
     "providers": {
-      "nvidia": {
-        "baseUrl": "https://integrate.api.nvidia.com/v1",
-        "apiKey": "${NVIDIA_API_KEY}",
+      "zai": {
+        "baseUrl": "https://api.z.ai/v1",
+        "apiKey": "${ZAI_API_KEY}",
         "api": "openai-completions",
         "models": [
           {
-            "id": "moonshotai/kimi-k2.5",
-            "name": "kimi-k2.5",
+            "id": "glm-4.7",
+            "name": "GLM-4.7",
             "reasoning": true,
             "input": ["text", "image"],
-            "contextWindow": 262144
+            "contextWindow": 128000
           }
         ]
       }
@@ -119,12 +114,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "defaults": {
       "workspace": "/data/workspace",
       "model": {
-        "primary": "nvidia/moonshotai/kimi-k2.5",
-        "fallbacks": [
-          "openrouter/google/gemini-2.0-flash-exp:free",
-          "openrouter/meta-llama/llama-3.2-3b-instruct:free",
-          "openrouter/mistralai/mistral-7b-instruct:free"
-        ]
+        "primary": "zai/glm-4.7"
       }
     }
   },
@@ -143,7 +133,5 @@ echo "Running OpenClaw doctor to fix config..."
 
 echo "Starting OpenClaw gateway..."
 
-# For containers, run the gateway in foreground mode
-# Using 'gateway' (not 'gateway start') with explicit foreground options
 export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
 exec /usr/local/bin/openclaw gateway --port 18789 --bind lan --verbose 2>&1

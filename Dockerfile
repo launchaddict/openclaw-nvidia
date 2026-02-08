@@ -7,8 +7,8 @@ ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
 ENV PATH="/usr/local/bin:${PATH}"
 
 # Placeholder values - must be overridden in Railway
-ENV NVIDIA_API_KEY=placeholder_nvidia_key
-ENV TELEGRAM_BOT_TOKEN=placeholder_telegram_token
+ENV ZAI_API_KEY=
+ENV TELEGRAM_BOT_TOKEN=
 
 RUN npm install -g openclaw@latest && \
     mkdir -p /data/.openclaw/agents/main/agent /data/workspace && \
