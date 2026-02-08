@@ -51,7 +51,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "merge",
     "providers": {
       "zai": {
-        "baseUrl": "https://api.z.ai/v1",
+        "baseUrl": "https://api.z.ai/api/coding/paas/v4",
         "apiKey": "${ZAI_API_KEY}",
         "api": "openai-completions",
         "models": [
@@ -95,7 +95,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "merge",
     "providers": {
       "zai": {
-        "baseUrl": "https://api.z.ai/v1",
+        "baseUrl": "https://api.z.ai/api/coding/paas/v4",
         "apiKey": "${ZAI_API_KEY}",
         "api": "openai-completions",
         "models": [
