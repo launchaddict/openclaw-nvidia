@@ -56,7 +56,10 @@ printf '{
   }
 }\n' "$TELEGRAM_BOT_TOKEN" > /data/.openclaw/openclaw.json
 
+echo "Running OpenClaw doctor to fix config..."
+/usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
+
 echo "Starting OpenClaw gateway..."
 
-# Start OpenClaw gateway
-exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan
+# Start OpenClaw gateway - skip service check since there's no systemd in containers
+exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan --verbose
