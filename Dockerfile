@@ -6,7 +6,6 @@ ENV OPENCLAW_STATE_DIR=/data/.openclaw
 ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
 ENV PATH="/usr/local/bin:${PATH}"
 
-# Placeholder values - must be overridden in Railway
 ENV ZAI_API_KEY=
 ENV TELEGRAM_BOT_TOKEN=
 
