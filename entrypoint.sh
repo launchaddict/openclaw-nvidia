@@ -61,6 +61,7 @@ echo "Running OpenClaw doctor to fix config..."
 
 echo "Starting OpenClaw gateway..."
 
-# For containers, use 'gateway start' which runs in foreground
-# instead of 'gateway' which tries to use systemd
-exec /usr/local/bin/openclaw gateway start --port 18789 --bind lan
+# For containers, run the gateway in foreground mode
+# Using 'gateway' (not 'gateway start') with explicit foreground options
+export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
+exec /usr/local/bin/openclaw gateway --port 18789 --bind lan --verbose 2>&1
