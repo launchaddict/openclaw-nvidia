@@ -37,53 +37,94 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 }
 EOF
 
-# Create openclaw.json - using printf to handle variable expansion safely
-# If TELEGRAM_ALLOW_FROM is set, add it to auto-approve that user
+# Create openclaw.json with NVIDIA NIM as custom provider
 if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
-  printf '{
-    "gateway": {
-      "mode": "local",
-      "port": 18789,
-      "bind": "lan"
-    },
-    "agents": {
-      "defaults": {
-        "workspace": "/data/workspace",
-        "model": {
-          "primary": "nvidia/kimi-k2.5"
-        }
-      }
-    },
-    "channels": {
-      "telegram": {
-        "enabled": true,
-        "botToken": "%s",
-        "allowFrom": ["%s"]
+cat > /data/.openclaw/openclaw.json << EOF
+{
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "lan"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "nvidia": {
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "${NVIDIA_API_KEY}",
+        "api": "openai-chat",
+        "models": [
+          {
+            "id": "moonshotai/kimi-k2.5",
+            "name": "kimi-k2.5",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144
+          }
+        ]
       }
     }
-  }\n' "$TELEGRAM_BOT_TOKEN" "$TELEGRAM_ALLOW_FROM" > /data/.openclaw/openclaw.json
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/data/workspace",
+      "model": {
+        "primary": "nvidia/moonshotai/kimi-k2.5"
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"]
+    }
+  }
+}
+EOF
 else
-  printf '{
-    "gateway": {
-      "mode": "local",
-      "port": 18789,
-      "bind": "lan"
-    },
-    "agents": {
-      "defaults": {
-        "workspace": "/data/workspace",
-        "model": {
-          "primary": "nvidia/kimi-k2.5"
-        }
-      }
-    },
-    "channels": {
-      "telegram": {
-        "enabled": true,
-        "botToken": "%s"
+cat > /data/.openclaw/openclaw.json << EOF
+{
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "lan"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "nvidia": {
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "${NVIDIA_API_KEY}",
+        "api": "openai-chat",
+        "models": [
+          {
+            "id": "moonshotai/kimi-k2.5",
+            "name": "kimi-k2.5",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144
+          }
+        ]
       }
     }
-  }\n' "$TELEGRAM_BOT_TOKEN" > /data/.openclaw/openclaw.json
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/data/workspace",
+      "model": {
+        "primary": "nvidia/moonshotai/kimi-k2.5"
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}"
+    }
+  }
+}
+EOF
 fi
 
 echo "Running OpenClaw doctor to fix config..."
