@@ -34,27 +34,53 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 EOF
 
 # Create openclaw.json - using printf to handle variable expansion safely
-printf '{
-  "gateway": {
-    "mode": "local",
-    "port": 18789,
-    "bind": "lan"
-  },
-  "agents": {
-    "defaults": {
-      "workspace": "/data/workspace",
-      "model": {
-        "primary": "moonshotai/kimi-k2.5"
+# If TELEGRAM_ALLOW_FROM is set, add it to auto-approve that user
+if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
+  printf '{
+    "gateway": {
+      "mode": "local",
+      "port": 18789,
+      "bind": "lan"
+    },
+    "agents": {
+      "defaults": {
+        "workspace": "/data/workspace",
+        "model": {
+          "primary": "moonshotai/kimi-k2.5"
+        }
+      }
+    },
+    "channels": {
+      "telegram": {
+        "enabled": true,
+        "botToken": "%s",
+        "allowFrom": ["%s"]
       }
     }
-  },
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "botToken": "%s"
+  }\n' "$TELEGRAM_BOT_TOKEN" "$TELEGRAM_ALLOW_FROM" > /data/.openclaw/openclaw.json
+else
+  printf '{
+    "gateway": {
+      "mode": "local",
+      "port": 18789,
+      "bind": "lan"
+    },
+    "agents": {
+      "defaults": {
+        "workspace": "/data/workspace",
+        "model": {
+          "primary": "moonshotai/kimi-k2.5"
+        }
+      }
+    },
+    "channels": {
+      "telegram": {
+        "enabled": true,
+        "botToken": "%s"
+      }
     }
-  }
-}\n' "$TELEGRAM_BOT_TOKEN" > /data/.openclaw/openclaw.json
+  }\n' "$TELEGRAM_BOT_TOKEN" > /data/.openclaw/openclaw.json
+fi
 
 echo "Running OpenClaw doctor to fix config..."
 /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
