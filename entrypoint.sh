@@ -46,7 +46,7 @@ if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
       "defaults": {
         "workspace": "/data/workspace",
         "model": {
-          "primary": "kimi-k2.5"
+          "primary": "moonshot/kimi-k2.5"
         }
       }
     },
@@ -69,7 +69,7 @@ else
       "defaults": {
         "workspace": "/data/workspace",
         "model": {
-          "primary": "kimi-k2.5"
+          "primary": "moonshot/kimi-k2.5"
         }
       }
     },
