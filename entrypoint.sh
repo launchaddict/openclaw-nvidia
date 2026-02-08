@@ -70,7 +70,12 @@ cat > /data/.openclaw/openclaw.json << EOF
     "defaults": {
       "workspace": "/data/workspace",
       "model": {
-        "primary": "nvidia/moonshotai/kimi-k2.5"
+        "primary": "nvidia/moonshotai/kimi-k2.5",
+        "fallbacks": [
+          "openrouter/google/gemini-2.0-flash-exp:free",
+          "openrouter/meta-llama/llama-3.2-3b-instruct:free",
+          "openrouter/mistralai/mistral-7b-instruct:free"
+        ]
       }
     }
   },
@@ -114,7 +119,12 @@ cat > /data/.openclaw/openclaw.json << EOF
     "defaults": {
       "workspace": "/data/workspace",
       "model": {
-        "primary": "nvidia/moonshotai/kimi-k2.5"
+        "primary": "nvidia/moonshotai/kimi-k2.5",
+        "fallbacks": [
+          "openrouter/google/gemini-2.0-flash-exp:free",
+          "openrouter/meta-llama/llama-3.2-3b-instruct:free",
+          "openrouter/mistralai/mistral-7b-instruct:free"
+        ]
       }
     }
   },
