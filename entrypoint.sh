@@ -16,12 +16,19 @@ if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
   echo ""
 fi
 
-# Remove old config files to ensure fresh config
-rm -f /data/.openclaw/openclaw.json
-rm -f /data/.openclaw/agents/main/agent/auth-profiles.json
-rm -f /data/.openclaw/agents/main/agent/auth.json
+# Ensure required directories exist
+PORT=${PORT:-18789}
+mkdir -p /data/.openclaw/agents/main/agent /data/workspace
 
-# Create auth-profiles.json for Z.ai
+# Optional config regeneration (set OPENCLAW_REGENERATE_CONFIG=1 to force)
+if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ]; then
+  rm -f /data/.openclaw/openclaw.json
+  rm -f /data/.openclaw/agents/main/agent/auth-profiles.json
+  rm -f /data/.openclaw/agents/main/agent/auth.json
+fi
+
+# Create auth-profiles.json for Z.ai (only if missing or regen forced)
+if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ] || [ ! -f /data/.openclaw/agents/main/agent/auth-profiles.json ]; then
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 {
   "version": 1,
@@ -37,14 +44,16 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
   }
 }
 EOF
+fi
 
-# Create openclaw.json with Z.ai GLM 4.7 as the provider
+# Create openclaw.json with Z.ai GLM 4.7 as the provider (only if missing or regen forced)
+if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ] || [ ! -f /data/.openclaw/openclaw.json ]; then
 if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
 cat > /data/.openclaw/openclaw.json << EOF
 {
   "gateway": {
     "mode": "local",
-    "port": 18789,
+    "port": ${PORT},
     "bind": "lan"
   },
   "models": {
@@ -88,7 +97,7 @@ cat > /data/.openclaw/openclaw.json << EOF
 {
   "gateway": {
     "mode": "local",
-    "port": 18789,
+    "port": ${PORT},
     "bind": "lan"
   },
   "models": {
@@ -127,11 +136,12 @@ cat > /data/.openclaw/openclaw.json << EOF
 }
 EOF
 fi
+fi
 
 echo "Running OpenClaw doctor to fix config..."
 /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
 
-echo "Starting OpenClaw gateway..."
+echo "Starting OpenClaw gateway on port ${PORT}..."
 
 export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
-exec /usr/local/bin/openclaw gateway --port 18789 --bind lan --verbose 2>&1
+exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
