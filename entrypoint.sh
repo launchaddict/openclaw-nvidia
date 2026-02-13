@@ -68,23 +68,18 @@ cat > /data/.openclaw/openclaw.json << EOF
 }
 EOF
 
-# GitHub state sync (optional - restore state BEFORE writing config)
-# This ensures we restore old state but always use fresh config with env vars
-if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
-  echo "📥 Restoring state from GitHub..."
-  TEMP_DIR=$(mktemp -d)
-  if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
-    echo "📂 Repo contents:"
-    ls -la "$TEMP_DIR" 2>&1 || echo "(ls failed)"
-    # Restore only state files (not config)
-    cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
-    cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
-    echo "✅ State restored (memory files and sessions only)"
-  else
-    echo "⚠️ Could not clone repo, continuing without state restore"
-  fi
-  rm -rf "$TEMP_DIR"
-fi
+# GitHub state sync (DISABLED - was restoring stale state)
+# State will be fresh per deployment - only backup is enabled
+# if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
+#   echo "📥 Restoring state from GitHub..."
+#   TEMP_DIR=$(mktemp -d)
+#   if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
+#     cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
+#     cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
+#     echo "✅ State restored"
+#   fi
+#   rm -rf "$TEMP_DIR"
+# fi
 
 # Auth profiles (with actual API key)
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
