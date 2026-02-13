@@ -1,4 +1,4 @@
-# OpenClaw z.ai Image
+# Moltaddict - OpenClaw z.ai Image
 
 Pre-configured OpenClaw Docker image with:
 - **Provider:** Z.ai (GLM models)
@@ -17,7 +17,7 @@ Pre-configured OpenClaw Docker image with:
 ## Usage in Railway
 
 1. Create empty service
-2. Source: `ghcr.io/launchaddict/openclaw-nvidia:latest`
+2. Source: `ghcr.io/launchaddict/moltaddict:latest`
 3. Add env vars (`ZAI_API_KEY` and `TELEGRAM_BOT_TOKEN`)
 4. Add volume at `/data`
 5. Deploy
@@ -29,5 +29,5 @@ docker run -d \
   -e ZAI_API_KEY=your_key \
   -e TELEGRAM_BOT_TOKEN=your_token \
   -p 18789:18789 \
-  ghcr.io/launchaddict/openclaw-nvidia:latest
+  ghcr.io/launchaddict/moltaddict:latest
 ```
