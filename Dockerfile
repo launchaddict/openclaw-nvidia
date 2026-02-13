@@ -1,6 +1,6 @@
 FROM node:22-slim
 
-RUN apt-get update && apt-get install -y git chromium rsync && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git chromium && rm -rf /var/lib/apt/lists/*
 
 ENV OPENCLAW_STATE_DIR=/data/.openclaw
 ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
