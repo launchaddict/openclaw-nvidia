@@ -81,18 +81,18 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 }
 EOF
 
-# GitHub state sync (optional - only syncs memory/state, not config)
-if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
-  echo "📥 Restoring state from GitHub..."
-  TEMP_DIR=$(mktemp -d)
-  if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
-    # Restore only state files (not config)
-    cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
-    cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
-    echo "✅ State restored"
-  fi
-  rm -rf "$TEMP_DIR"
-fi
+# GitHub state sync DISABLED - may be restoring stale state that interferes with Telegram
+# if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
+#   echo "📥 Restoring state from GitHub..."
+#   TEMP_DIR=$(mktemp -d)
+#   if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
+#     cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
+#     cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
+#     echo "✅ State restored"
+#   fi
+#   rm -rf "$TEMP_DIR"
+# fi
+echo "📝 Starting with fresh state (GitHub restore disabled)"
 
 # Backup function for state only
 backup_state() {
