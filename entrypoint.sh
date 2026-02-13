@@ -68,6 +68,24 @@ cat > /data/.openclaw/openclaw.json << EOF
 }
 EOF
 
+# GitHub state sync (optional - restore state BEFORE writing config)
+# This ensures we restore old state but always use fresh config with env vars
+if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
+  echo "📥 Restoring state from GitHub..."
+  TEMP_DIR=$(mktemp -d)
+  if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
+    echo "📂 Repo contents:"
+    ls -la "$TEMP_DIR" 2>/dev/null || true
+    # Restore only state files (not config)
+    cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
+    cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
+    echo "✅ State restored (memory files and sessions only)"
+  else
+    echo "⚠️ Could not clone repo, continuing without state restore"
+  fi
+  rm -rf "$TEMP_DIR"
+fi
+
 # Auth profiles (with actual API key)
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 {
@@ -84,19 +102,6 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
   }
 }
 EOF
-
-# GitHub state sync (optional - only syncs memory/state, not config)
-if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
-  echo "📥 Restoring state from GitHub..."
-  TEMP_DIR=$(mktemp -d)
-  if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
-    # Restore only state files (not config)
-    cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
-    cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
-    echo "✅ State restored"
-  fi
-  rm -rf "$TEMP_DIR"
-fi
 
 # Backup function for state only
 backup_state() {
