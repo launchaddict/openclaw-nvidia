@@ -26,14 +26,75 @@ if [ -n "$GITHUB_PAT" ]; then
   echo "https://launchaddict:${GITHUB_PAT}@github.com" > ~/.git-credentials
 fi
 
-# GitHub PAT for pushing (optional - enables claw to push to GitHub)
+# GitHub config sync (optional - for persistent config across redeploys)
+GITHUB_CONFIG_REPO=${GITHUB_CONFIG_REPO:-""}
+CONFIG_BACKUP_INTERVAL=${CONFIG_BACKUP_INTERVAL:-86400}  # 24 hours default (set to 0 to disable)
+
 if [ -n "$GITHUB_PAT" ]; then
   echo "🔑 Configuring Git with GitHub PAT..."
   git config --global user.email "claw@openclaw.local"
   git config --global user.name "OpenClaw"
-  # Store PAT for HTTPS auth
   git config --global credential.helper store
   echo "https://launchaddict:${GITHUB_PAT}@github.com" > ~/.git-credentials
+
+  # Sync config from GitHub if repo specified
+  if [ -n "$GITHUB_CONFIG_REPO" ]; then
+    echo "📥 Syncing config from GitHub ($GITHUB_CONFIG_REPO)..."
+    TEMP_DIR=$(mktemp -d)
+    if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
+      # Restore config files (but not auth files with secrets)
+      find "$TEMP_DIR" -name "*.json" ! -name "auth-profiles.json" ! -name "auth.json" -exec cp {} /data/.openclaw/ \; 2>/dev/null || true
+      find "$TEMP_DIR" -name "*.yaml" -o -name "*.yml" | xargs -I {} cp {} /data/.openclaw/ 2>/dev/null || true
+      echo "✅ Config restored from GitHub"
+    fi
+    rm -rf "$TEMP_DIR"
+  fi
+fi
+
+# Function to backup config to GitHub
+backup_config() {
+  if [ -z "$GITHUB_PAT" ] || [ -z "$GITHUB_CONFIG_REPO" ]; then
+    return 0
+  fi
+
+  echo "📤 Backing up config to GitHub..."
+  TEMP_DIR=$(mktemp -d)
+  cd "$TEMP_DIR"
+
+  # Clone or init
+  if ! git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" . 2>/dev/null; then
+    git init
+    git remote add origin "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git"
+  fi
+
+  # Copy config (exclude secrets)
+  cp /data/.openclaw/*.json . 2>/dev/null || true
+  cp /data/.openclaw/*.yaml . 2>/dev/null || true
+  rm -f auth-profiles.json auth.json 2>/dev/null || true
+
+  # Commit and push
+  git add -A 2>/dev/null || true
+  if ! git diff --cached --quiet 2>/dev/null; then
+    git commit -m "config: $(date -u +%Y-%m-%d_%H:%M:%S)" 2>/dev/null || true
+    git push origin HEAD:main 2>/dev/null || git push -u origin HEAD:main 2>/dev/null || echo "⚠️  Config backup failed"
+  fi
+
+  cd /
+  rm -rf "$TEMP_DIR"
+}
+
+# Trap SIGTERM for backup on graceful shutdown
+trap 'echo "🛑 SIGTERM - backing up config..."; backup_config; exit 0' TERM INT
+
+# Start periodic backup in background if enabled
+if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ] && [ "$CONFIG_BACKUP_INTERVAL" -gt 0 ]; then
+  (
+    while true; do
+      sleep "$CONFIG_BACKUP_INTERVAL"
+      backup_config
+    done
+  ) &
+  BACKUP_PID=$!
 fi
 
 # Ensure required directories exist
