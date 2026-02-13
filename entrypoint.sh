@@ -19,9 +19,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "local",
     "port": ${PORT},
     "bind": "lan",
-    "auth": {
-      "token": "${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}"
-    }
+    "token": "${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}"
   },
   "models": {
     "mode": "merge",
@@ -59,7 +57,13 @@ cat > /data/.openclaw/openclaw.json << EOF
   },
   "browser": {
     "enabled": true,
-    "defaultProfile": "openclaw"
+    "defaultProfile": "openclaw",
+    "profiles": {
+      "openclaw": {
+        "name": "openclaw",
+        "type": "chromium"
+      }
+    }
   }
 }
 EOF
@@ -118,11 +122,5 @@ backup_state() {
 trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
-# Don't run doctor --fix as it may overwrite our config
-# /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
-
-# Ensure data directories exist
-mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
-
-# Start gateway in foreground (required for containers)
+/usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
