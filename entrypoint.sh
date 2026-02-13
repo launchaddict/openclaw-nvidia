@@ -81,48 +81,15 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 }
 EOF
 
-# GitHub state sync DISABLED - may be restoring stale state that interferes with Telegram
-# if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
-#   echo "📥 Restoring state from GitHub..."
-#   TEMP_DIR=$(mktemp -d)
-#   if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
-#     cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
-#     cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
-#     echo "✅ State restored"
-#   fi
-#   rm -rf "$TEMP_DIR"
-# fi
-echo "📝 Starting with fresh state (GitHub restore disabled)"
-
-# Backup function for state only
-backup_state() {
-  if [ -z "$GITHUB_PAT" ] || [ -z "$GITHUB_CONFIG_REPO" ]; then
-    return 0
-  fi
-  echo "📤 Backing up state..."
-  TEMP_DIR=$(mktemp -d)
-  cd "$TEMP_DIR"
-  git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" . 2>/dev/null || git init
-  
-  # Copy state only
-  cp /data/.openclaw/memory* . 2>/dev/null || true
-  cp -r /data/.openclaw/agents/main/sessions . 2>/dev/null || true
-  
-  git add -A 2>/dev/null || true
-  git commit -m "state: $(date -u +%Y-%m-%d_%H:%M:%S)" 2>/dev/null || true
-  git push "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" main 2>/dev/null || true
-  cd /
-  rm -rf "$TEMP_DIR"
-}
-
-trap 'backup_state' TERM INT
+# GitHub backup removed - state is ephemeral per deployment
 
 echo "🦞 Starting OpenClaw..."
-# Don't run doctor --fix as it may overwrite our config
-# /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
 
 # Ensure data directories exist
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
+
+# Run doctor --fix to apply config fixes and enable channels
+/usr/local/bin/openclaw doctor --fix --yes
 
 # Start gateway in foreground (required for containers)
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
