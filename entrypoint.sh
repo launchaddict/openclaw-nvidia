@@ -45,6 +45,11 @@ if [ -n "$GITHUB_PAT" ]; then
       # Restore config files (but not auth files with secrets)
       find "$TEMP_DIR" -name "*.json" ! -name "auth-profiles.json" ! -name "auth.json" -exec cp {} /data/.openclaw/ \; 2>/dev/null || true
       find "$TEMP_DIR" -name "*.yaml" -o -name "*.yml" | xargs -I {} cp {} /data/.openclaw/ 2>/dev/null || true
+      # Expand env vars in restored config (e.g., ${TELEGRAM_BOT_TOKEN})
+      if [ -f /data/.openclaw/openclaw.json ]; then
+        echo "🔧 Expanding env vars in config..."
+        envsubst < /data/.openclaw/openclaw.json > /data/.openclaw/openclaw.json.tmp && mv /data/.openclaw/openclaw.json.tmp /data/.openclaw/openclaw.json
+      fi
       echo "✅ Config restored from GitHub"
     fi
     rm -rf "$TEMP_DIR"
