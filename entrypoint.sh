@@ -122,16 +122,17 @@ backup_state() {
 trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
-echo "📁 Data dir contents before start:"
-ls -la /data/.openclaw/ 2>&1 || echo "(ls failed)"
-echo "📄 Config file check:"
-head -5 /data/.openclaw/openclaw.json 2>&1 || echo "(no config yet)"
 
 # Ensure data directories exist with correct permissions
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
 chmod 700 /data/.openclaw
 chmod 600 /data/.openclaw/openclaw.json 2>/dev/null || true
 
+# Add Telegram channel explicitly using CLI (in addition to config)
+if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+  echo "📱 Adding Telegram channel..."
+  /usr/local/bin/openclaw channels add --channel telegram --token "$TELEGRAM_BOT_TOKEN" --non-interactive 2>/dev/null || true
+fi
+
 # Start gateway in foreground (required for containers)
-# Skip doctor --fix as it may not properly enable Telegram
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
