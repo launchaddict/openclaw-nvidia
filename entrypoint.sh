@@ -75,7 +75,7 @@ if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
   TEMP_DIR=$(mktemp -d)
   if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
     echo "📂 Repo contents:"
-    ls -la "$TEMP_DIR" 2>/dev/null || true
+    ls -la "$TEMP_DIR" 2>&1 || echo "(ls failed)"
     # Restore only state files (not config)
     cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
     cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
@@ -127,6 +127,10 @@ backup_state() {
 trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
+echo "📁 Data dir contents before start:"
+ls -la /data/.openclaw/ 2>&1 || echo "(ls failed)"
+echo "📄 Config file check:"
+head -5 /data/.openclaw/openclaw.json 2>&1 || echo "(no config yet)"
 
 # Ensure data directories exist with correct permissions
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
