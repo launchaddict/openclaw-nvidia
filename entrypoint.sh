@@ -122,8 +122,8 @@ echo "🦞 Starting OpenClaw..."
 # Ensure data directories exist
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
 
-# Enable Telegram channel explicitly
-/usr/local/bin/openclaw channels telegram enable 2>/dev/null || true
+# Run doctor --fix to enable Telegram (as suggested by the logs)
+/usr/local/bin/openclaw doctor --fix --yes
 
 # Start gateway in foreground (required for containers)
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
