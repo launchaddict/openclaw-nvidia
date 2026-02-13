@@ -120,11 +120,11 @@ trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
 
-# Ensure data directories exist
+# Ensure data directories exist with correct permissions
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
-
-# Run doctor --fix to enable Telegram (as suggested by the logs)
-/usr/local/bin/openclaw doctor --fix --yes
+chmod 700 /data/.openclaw
+chmod 600 /data/.openclaw/openclaw.json 2>/dev/null || true
 
 # Start gateway in foreground (required for containers)
+# Skip doctor --fix as it may not properly enable Telegram
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
