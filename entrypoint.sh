@@ -19,7 +19,9 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "local",
     "port": ${PORT},
     "bind": "lan",
-    "token": "${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}"
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}"
+    }
   },
   "models": {
     "mode": "merge",
@@ -57,13 +59,7 @@ cat > /data/.openclaw/openclaw.json << EOF
   },
   "browser": {
     "enabled": true,
-    "defaultProfile": "openclaw",
-    "profiles": {
-      "openclaw": {
-        "name": "openclaw",
-        "type": "chromium"
-      }
-    }
+    "defaultProfile": "openclaw"
   }
 }
 EOF
