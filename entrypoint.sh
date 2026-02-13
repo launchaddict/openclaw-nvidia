@@ -55,7 +55,10 @@ cat > /data/.openclaw/openclaw.json << EOF
       "enabled": true,
       "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "allowlist",
-      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"]
+      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"],
+      "commands": {
+        "native": "auto"
+      }
     }
   },
   "browser": {
