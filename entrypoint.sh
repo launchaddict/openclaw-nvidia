@@ -54,6 +54,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "telegram": {
       "enabled": true,
       "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "dmPolicy": "allowlist",
       "allowFrom": ["${TELEGRAM_ALLOW_FROM}"]
     }
   },
