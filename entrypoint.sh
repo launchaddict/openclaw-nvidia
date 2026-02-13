@@ -54,11 +54,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "telegram": {
       "enabled": true,
       "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "dmPolicy": "allowlist",
-      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"],
-      "commands": {
-        "native": "auto"
-      }
+      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"]
     }
   },
   "browser": {
@@ -67,19 +63,6 @@ cat > /data/.openclaw/openclaw.json << EOF
   }
 }
 EOF
-
-# GitHub state sync (DISABLED - was restoring stale state)
-# State will be fresh per deployment - only backup is enabled
-# if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
-#   echo "📥 Restoring state from GitHub..."
-#   TEMP_DIR=$(mktemp -d)
-#   if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
-#     cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
-#     cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
-#     echo "✅ State restored"
-#   fi
-#   rm -rf "$TEMP_DIR"
-# fi
 
 # Auth profiles (with actual API key)
 cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
@@ -97,6 +80,19 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
   }
 }
 EOF
+
+# GitHub state sync (optional - only syncs memory/state, not config)
+if [ -n "$GITHUB_PAT" ] && [ -n "$GITHUB_CONFIG_REPO" ]; then
+  echo "📥 Restoring state from GitHub..."
+  TEMP_DIR=$(mktemp -d)
+  if git clone --depth 1 "https://${GITHUB_PAT}@github.com/${GITHUB_CONFIG_REPO}.git" "$TEMP_DIR" 2>/dev/null; then
+    # Restore only state files (not config)
+    cp "$TEMP_DIR"/memory* /data/.openclaw/ 2>/dev/null || true
+    cp -r "$TEMP_DIR/sessions" /data/.openclaw/agents/main/ 2>/dev/null || true
+    echo "✅ State restored"
+  fi
+  rm -rf "$TEMP_DIR"
+fi
 
 # Backup function for state only
 backup_state() {
@@ -122,17 +118,11 @@ backup_state() {
 trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
+# Don't run doctor --fix as it may overwrite our config
+# /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
 
-# Ensure data directories exist with correct permissions
+# Ensure data directories exist
 mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
-chmod 700 /data/.openclaw
-chmod 600 /data/.openclaw/openclaw.json 2>/dev/null || true
-
-# Add Telegram channel explicitly using CLI (in addition to config)
-if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
-  echo "📱 Adding Telegram channel..."
-  /usr/local/bin/openclaw channels add --channel telegram --token "$TELEGRAM_BOT_TOKEN" --non-interactive 2>/dev/null || true
-fi
 
 # Start gateway in foreground (required for containers)
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
