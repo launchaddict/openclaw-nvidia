@@ -118,5 +118,11 @@ backup_state() {
 trap 'backup_state' TERM INT
 
 echo "🦞 Starting OpenClaw..."
-/usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
+# Don't run doctor --fix as it may overwrite our config
+# /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
+
+# Ensure data directories exist
+mkdir -p /data/.openclaw/credentials /data/.openclaw/agents/main/sessions
+
+# Start gateway in foreground (required for containers)
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
