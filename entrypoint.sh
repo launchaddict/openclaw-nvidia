@@ -16,6 +16,25 @@ if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
   echo ""
 fi
 
+# Start Tailscale if auth key is provided
+if [ -n "$TAILSCALE_AUTH_KEY" ]; then
+  echo "Starting Tailscale daemon..."
+  mkdir -p /data/tailscale /var/run/tailscale
+  tailscaled --state=/data/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
+  sleep 2
+
+  echo "Connecting to Tailscale..."
+  tailscale up --authkey="$TAILSCALE_AUTH_KEY" --accept-routes --ssh
+
+  # Get the Tailscale hostname for display
+  TAILSCALE_HOST=$(tailscale status --json 2>/dev/null | grep -o '"HostName":"[^"]*"' | head -1 | cut -d'"' -f4)
+  echo "✓ Connected to Tailscale as: $TAILSCALE_HOST"
+else
+  echo "⚠️  TAILSCALE_AUTH_KEY not set - Mission Control will use token auth only"
+  echo "   For secure Tailscale access, set TAILSCALE_AUTH_KEY in Railway Variables"
+  echo ""
+fi
+
 # Ensure required directories exist
 PORT=${PORT:-18789}
 mkdir -p /data/.openclaw/agents/main/agent /data/workspace
@@ -48,13 +67,27 @@ fi
 
 # Create openclaw.json with Z.ai GLM 4.7 as the provider (only if missing or regen forced)
 if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ] || [ ! -f /data/.openclaw/openclaw.json ]; then
+
+# Determine bind mode: use loopback with Tailscale Serve, otherwise lan
+if [ -n "$TAILSCALE_AUTH_KEY" ]; then
+  GATEWAY_BIND="loopback"
+  TAILSCALE_CONFIG='"tailscale": { "mode": "serve" }'
+  AUTH_CONFIG='"auth": { "allowTailscale": true }'
+else
+  GATEWAY_BIND="lan"
+  TAILSCALE_CONFIG=""
+  AUTH_CONFIG='"auth": { "mode": "token" }'
+fi
+
 if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
 cat > /data/.openclaw/openclaw.json << EOF
 {
   "gateway": {
     "mode": "local",
     "port": ${PORT},
-    "bind": "lan"
+    "bind": "${GATEWAY_BIND}",
+    ${AUTH_CONFIG}${TAILSCALE_CONFIG:+,
+    ${TAILSCALE_CONFIG}}
   },
   "models": {
     "mode": "merge",
@@ -98,7 +131,9 @@ cat > /data/.openclaw/openclaw.json << EOF
   "gateway": {
     "mode": "local",
     "port": ${PORT},
-    "bind": "lan"
+    "bind": "${GATEWAY_BIND}",
+    ${AUTH_CONFIG}${TAILSCALE_CONFIG:+,
+    ${TAILSCALE_CONFIG}}
   },
   "models": {
     "mode": "merge",
@@ -143,5 +178,11 @@ echo "Running OpenClaw doctor to fix config..."
 
 echo "Starting OpenClaw gateway on port ${PORT}..."
 
-export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
-exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
+# Use Tailscale serve mode if configured
+if [ -n "$TAILSCALE_AUTH_KEY" ]; then
+  echo "✓ Tailscale Serve enabled - access Mission Control via https://<your-magic-dns>/"
+  exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind loopback --tailscale serve --verbose 2>&1
+else
+  export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
+  exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
+fi
