@@ -46,8 +46,9 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 EOF
 fi
 
-# Set gateway token (use env var or generate)
+# Set gateway token and password (use env vars or generate)
 export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
+export OPENCLAW_GATEWAY_PASSWORD=${OPENCLAW_GATEWAY_PASSWORD:-$(openssl rand -base64 24)}
 
 # Create openclaw.json with Z.ai GLM 4.7 as the provider (only if missing or regen forced)
 if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ] || [ ! -f /data/.openclaw/openclaw.json ]; then
@@ -60,7 +61,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "bind": "lan",
     "auth": {
       "token": "${OPENCLAW_GATEWAY_TOKEN}",
-      "password": "openclaw"
+      "password": "${OPENCLAW_GATEWAY_PASSWORD}"
     },
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
@@ -116,7 +117,7 @@ cat > /data/.openclaw/openclaw.json << EOF
     "bind": "lan",
     "auth": {
       "token": "${OPENCLAW_GATEWAY_TOKEN}",
-      "password": "openclaw"
+      "password": "${OPENCLAW_GATEWAY_PASSWORD}"
     },
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
