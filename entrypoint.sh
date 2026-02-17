@@ -60,6 +60,9 @@ cat > /data/.openclaw/openclaw.json << EOF
     "bind": "lan",
     "auth": {
       "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "controlUi": {
+      "dangerouslyDisableDeviceAuth": true
     }
   },
   "browser": {
@@ -112,6 +115,9 @@ cat > /data/.openclaw/openclaw.json << EOF
     "bind": "lan",
     "auth": {
       "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "controlUi": {
+      "dangerouslyDisableDeviceAuth": true
     }
   },
   "browser": {
