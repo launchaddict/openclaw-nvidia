@@ -59,7 +59,8 @@ cat > /data/.openclaw/openclaw.json << EOF
     "port": ${PORT},
     "bind": "lan",
     "auth": {
-      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+      "token": "${OPENCLAW_GATEWAY_TOKEN}",
+      "password": "openclaw"
     },
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
@@ -114,7 +115,8 @@ cat > /data/.openclaw/openclaw.json << EOF
     "port": ${PORT},
     "bind": "lan",
     "auth": {
-      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+      "token": "${OPENCLAW_GATEWAY_TOKEN}",
+      "password": "openclaw"
     },
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
