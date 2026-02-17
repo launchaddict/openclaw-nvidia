@@ -58,7 +58,14 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "local",
     "port": ${PORT},
     "bind": "lan",
-    "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "browser": {
+    "enabled": true,
+    "headless": true,
+    "defaultProfile": "openclaw"
   },
   "models": {
     "mode": "merge",
@@ -103,7 +110,14 @@ cat > /data/.openclaw/openclaw.json << EOF
     "mode": "local",
     "port": ${PORT},
     "bind": "lan",
-    "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "browser": {
+    "enabled": true,
+    "headless": true,
+    "defaultProfile": "openclaw"
   },
   "models": {
     "mode": "merge",
