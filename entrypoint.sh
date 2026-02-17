@@ -46,6 +46,9 @@ cat > /data/.openclaw/agents/main/agent/auth-profiles.json << EOF
 EOF
 fi
 
+# Set gateway token (use env var or generate)
+export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
+
 # Create openclaw.json with Z.ai GLM 4.7 as the provider (only if missing or regen forced)
 if [ "$OPENCLAW_REGENERATE_CONFIG" = "1" ] || [ ! -f /data/.openclaw/openclaw.json ]; then
 if [ -n "$TELEGRAM_ALLOW_FROM" ]; then
@@ -54,7 +57,8 @@ cat > /data/.openclaw/openclaw.json << EOF
   "gateway": {
     "mode": "local",
     "port": ${PORT},
-    "bind": "lan"
+    "bind": "lan",
+    "token": "${OPENCLAW_GATEWAY_TOKEN}"
   },
   "models": {
     "mode": "merge",
@@ -98,7 +102,8 @@ cat > /data/.openclaw/openclaw.json << EOF
   "gateway": {
     "mode": "local",
     "port": ${PORT},
-    "bind": "lan"
+    "bind": "lan",
+    "token": "${OPENCLAW_GATEWAY_TOKEN}"
   },
   "models": {
     "mode": "merge",
@@ -142,6 +147,5 @@ echo "Running OpenClaw doctor to fix config..."
 /usr/local/bin/openclaw doctor --fix --yes 2>/dev/null || true
 
 echo "Starting OpenClaw gateway on port ${PORT}..."
-
-export OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}
+echo "Gateway token: ${OPENCLAW_GATEWAY_TOKEN}"
 exec /usr/local/bin/openclaw gateway --port "${PORT}" --bind lan --verbose 2>&1
