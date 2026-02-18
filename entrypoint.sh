@@ -63,6 +63,7 @@ cat > /data/.openclaw/openclaw.json << EOF
       "token": "${OPENCLAW_GATEWAY_TOKEN}",
       "password": "${OPENCLAW_GATEWAY_PASSWORD}"
     },
+    "trustedProxies": ["100.64.0.0/10"],
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
     }
@@ -119,6 +120,7 @@ cat > /data/.openclaw/openclaw.json << EOF
       "token": "${OPENCLAW_GATEWAY_TOKEN}",
       "password": "${OPENCLAW_GATEWAY_PASSWORD}"
     },
+    "trustedProxies": ["100.64.0.0/10"],
     "controlUi": {
       "dangerouslyDisableDeviceAuth": true
     }
